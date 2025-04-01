@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Star, Heart, Phone, MessageCircle, Frown, Smile, ThumbsUp } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export default function RobeMeter() {
   const [level, setLevel] = useState(3);
@@ -8,28 +10,40 @@ export default function RobeMeter() {
   const [showStars, setShowStars] = useState(false);
   const [showReaction, setShowReaction] = useState(false);
   
-  // Simulate fetching the latest value from server on component mount
+  // Fetch the latest value from Firebase on component mount
   useEffect(() => {
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      // For demo purposes, we'll just use a random value
-      // In a real app, this would be a fetch call to your backend
-      const savedLevel = Math.floor(Math.random() * 7) + 1;
-      setLevel(savedLevel);
-      setLastSaved(new Date().toLocaleTimeString());
-    }, 1000);
+    const fetchLastLevel = async () => {
+      try {
+        const docRef = doc(db, 'loveMeter', 'currentLevel');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setLevel(data.level);
+          setLastSaved(data.lastSaved);
+        }
+      } catch (error) {
+        console.error("Error fetching level:", error);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    fetchLastLevel();
   }, []);
   
-  // Function to save the current level value
-  const saveLevel = () => {
+  // Function to save the current level value to Firebase
+  const saveLevel = async () => {
     setSaving(true);
     
-    // Simulate API call to save data
-    setTimeout(() => {
-      setSaving(false);
-      setLastSaved(new Date().toLocaleTimeString());
+    try {
+      const docRef = doc(db, 'loveMeter', 'currentLevel');
+      const currentTime = new Date().toLocaleTimeString();
+      
+      await setDoc(docRef, {
+        level: level,
+        lastSaved: currentTime
+      });
+      
+      setLastSaved(currentTime);
       
       // Show reaction animation based on level
       setShowReaction(true);
@@ -40,10 +54,11 @@ export default function RobeMeter() {
         setShowStars(true);
         setTimeout(() => setShowStars(false), 3000);
       }
-      
-      // In a real app, this would be a fetch POST to your backend
-      console.log("Level saved:", level);
-    }, 800);
+    } catch (error) {
+      console.error("Error saving level:", error);
+    } finally {
+      setSaving(false);
+    }
   };
   
   // Handle click on the meter to change level
