@@ -11,6 +11,7 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed:', user);
       setUser(user);
       setLoading(false);
     });
@@ -21,6 +22,7 @@ function App() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      console.log('Logged out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -38,17 +40,15 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className="App relative">
       {user ? (
-        <div>
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={handleLogout}
-              className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
+        <div className="relative">
+          <button
+            onClick={handleLogout}
+            className="fixed top-4 right-4 z-50 bg-white text-pink-500 px-4 py-2 rounded-md hover:bg-pink-50 transition-colors border border-pink-500"
+          >
+            Logout
+          </button>
           <RobeMeter />
         </div>
       ) : (
