@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import RobeMeter from './components/RobeMeter';
 import Login from './components/Login';
+import MoviePopup from './components/MoviePopup';
+import MovieDateInvitation from './components/MovieDateInvitation';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import './App.css';
@@ -8,6 +10,7 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showMovieInvitation, setShowMovieInvitation] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -39,6 +42,13 @@ function App() {
     );
   }
 
+  // If showing movie invitation, render that instead
+  if (showMovieInvitation) {
+    return (
+      <MovieDateInvitation onBack={() => setShowMovieInvitation(false)} />
+    );
+  }
+
   return (
     <div className="App relative">
       {user ? (
@@ -50,6 +60,12 @@ function App() {
             Logout
           </button>
           <RobeMeter />
+          
+          {/* Movie Popup */}
+          <MoviePopup 
+            onClose={() => {}} 
+            onAccept={() => setShowMovieInvitation(true)} 
+          />
         </div>
       ) : (
         <Login onLogin={() => setUser(auth.currentUser)} />
